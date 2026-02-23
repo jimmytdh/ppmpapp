@@ -47,6 +47,18 @@ foreach ($rows as $row) {
     $totalBudget += (float)$row['estimated_budget'];
 }
 $endUserLabel = implode(', ', array_keys($endUsers));
+$documentTypes = [];
+foreach ($rows as $row) {
+    $rawDocumentType = trim((string)($row['document_type'] ?? ''));
+    $documentTypes[] = $rawDocumentType !== '' ? $rawDocumentType : 'Empty';
+}
+$documentTypes = array_values(array_unique($documentTypes));
+$titleDocumentType = count($documentTypes) === 1 ? $documentTypes[0] : 'Mixed';
+$titlePrefix = '';
+if ($titleDocumentType !== '' && strcasecmp($titleDocumentType, 'Empty') !== 0) {
+    $titlePrefix = strtoupper($titleDocumentType) . ' ';
+}
+$titleText = $titlePrefix . 'PROJECT PROCUREMENT MANAGEMENT PLAN (PPMP) NO. ___';
 
 $bannerDataUri = null;
 $bannerPath = __DIR__ . '/assets/print-header.png';
@@ -117,7 +129,7 @@ function sanitizeDescriptionHtml(string $html): string
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPMP Print View</title>
+    <title><?= htmlspecialchars($titleText) ?></title>
     <style>
         @page { size: legal landscape; margin: 0.15in; }
         html, body { margin: 0; padding: 0; color: #000; }
@@ -231,7 +243,7 @@ function sanitizeDescriptionHtml(string $html): string
         <?php endif; ?>
 
         <div class="title-wrap">
-            <div class="title">PROJECT PROCUREMENT MANAGEMENT PLAN (PPMP) NO. ___</div>
+            <div class="title"><?= htmlspecialchars($titleText) ?></div>
             <div class="mode-row">
                 <span class="mode-item"><span class="chk"></span>INDICATIVE</span>
                 <span class="mode-item"><span class="chk"></span>FINAL</span>
@@ -245,18 +257,18 @@ function sanitizeDescriptionHtml(string $html): string
 
         <table class="ppmp-grid">
             <colgroup>
-                <col style="width:10.8%">
+                <col style="width:16.8%">
                 <col style="width:8.8%">
-                <col style="width:9.5%">
-                <col style="width:9.5%">
+                <col style="width:8.5%">
+                <col style="width:8.5%">
                 <col style="width:5.8%">
                 <col style="width:7.2%">
                 <col style="width:6.0%">
                 <col style="width:6.0%">
                 <col style="width:8.0%">
                 <col style="width:6.5%">
-                <col style="width:8.5%">
-                <col style="width:13.4%">
+                <col style="width:7.5%">
+                <col style="width:10.4%">
             </colgroup>
             <thead>
                 <tr class="group-row">

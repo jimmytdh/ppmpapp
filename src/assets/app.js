@@ -147,7 +147,7 @@
 
     function renderRows(rows) {
         if (!rows.length) {
-            tbody.html('<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No records yet.</td></tr>');
+            tbody.html('<tr><td colspan="9" class="px-4 py-8 text-center text-slate-500">No records yet.</td></tr>');
             return;
         }
 
@@ -156,6 +156,7 @@
                 <td class="px-4 py-3 align-top font-semibold text-slate-800">${escapeHtml(row.project_title)}</td>
                 <td class="px-4 py-3 align-top">${escapeHtml(row.end_user)}</td>
                 <td class="px-4 py-3 align-top">${escapeHtml(row.type_of_project || '')}</td>
+                <td class="px-4 py-3 align-top">${escapeHtml(row.document_type || 'Empty')}</td>
                 <td class="px-4 py-3 align-top text-slate-700">${formatDescription(row.general_description)}</td>
                 <td class="px-4 py-3 align-top">${escapeHtml(row.mode_of_procurement)}</td>
                 <td class="px-4 py-3 align-top">${escapeHtml(row.covered_by_epa)}</td>
@@ -287,6 +288,7 @@
                 $('#general_description').val(toEditorHtml(row.general_description || ''));
                 $('#mode_of_procurement').val(row.mode_of_procurement);
                 $('#covered_by_epa').val(row.covered_by_epa);
+                $('#document_type').val(row.document_type || 'Empty');
                 $('#estimated_budget').val(row.estimated_budget);
                 openModal('Edit Project');
             })

@@ -52,7 +52,8 @@ declare(strict_types=1);
                             <tr>
                                 <th class="px-4 py-3 text-left">Project Title</th>
                                 <th class="px-4 py-3 text-left">End User</th>
-                                <th class="px-4 py-3 text-left">Type of Project</th>
+                                <th class="px-4 py-3 text-left">Project Type</th>
+                                <th class="px-4 py-3 text-left">Document Type</th>
                                 <th class="px-4 py-3 text-left">General Description</th>
                                 <th class="px-4 py-3 text-left">Mode</th>
                                 <th class="px-4 py-3 text-left">EPA</th>
@@ -84,11 +85,19 @@ declare(strict_types=1);
                     <input type="text" id="end_user" name="end_user" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-semibold">Type of Project</label>
+                    <label class="mb-1 block text-sm font-semibold">Project Type</label>
                     <select id="type_of_project" name="type_of_project" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
                         <option value="Goods">Goods</option>
                         <option value="Infrastructure">Infrastructure</option>
                         <option value="Service">Service</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-semibold">Document Type</label>
+                    <select id="document_type" name="document_type" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
+                        <option value="Empty">Empty</option>
+                        <option value="Updated">Updated</option>
+                        <option value="Supplemental">Supplemental</option>
                     </select>
                 </div>
                 <div>

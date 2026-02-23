@@ -28,6 +28,22 @@ if (!$rows) {
     exit;
 }
 
+$currentYear = (new DateTime('now'))->format('Y');
+$documentTypes = [];
+foreach ($rows as $row) {
+    $rawDocumentType = trim((string)($row['document_type'] ?? ''));
+    $documentTypes[] = $rawDocumentType !== '' ? $rawDocumentType : 'Empty';
+}
+$documentTypes = array_values(array_unique($documentTypes));
+$titleDocumentType = count($documentTypes) === 1 ? $documentTypes[0] : 'Mixed';
+$titlePrefix = '';
+if (strcasecmp($titleDocumentType, 'Supplemental') === 0) {
+    $titlePrefix = 'SUPPLEMENTAL ';
+} elseif (strcasecmp($titleDocumentType, 'Updated') === 0) {
+    $titlePrefix = 'UPDATED ';
+}
+$titleText = $titlePrefix . 'ANNUAL PROCUREMENT PLAN FOR FY ' . $currentYear;
+
 $totalEpa = 0.0;
 $totalNonEpa = 0.0;
 foreach ($rows as $row) {
@@ -116,7 +132,7 @@ if (file_exists($bannerPath)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APP Print View</title>
+    <title><?= htmlspecialchars($titleText) ?></title>
     <style>
         @page { size: legal landscape; margin: 0.15in; }
         html, body { margin: 0; padding: 0; color: #000; }
@@ -128,7 +144,7 @@ if (file_exists($bannerPath)) {
         .print-banner { width: 100%; }
         .print-banner img { width: 100%; height: auto; display: block; }
         .title-wrap { text-align: center; margin: 28px 0 8px 0; }
-        .title { font-weight: 700; font-size: 10px; line-height: 1.15; letter-spacing: 0.2px; }
+        .title { font-weight: 700; font-size: 14px; line-height: 1.2; letter-spacing: 0.2px; }
         .mode-row { margin-top: 10px; font-size: 10px; font-weight: 700; }
         .mode-item { margin: 0 18px; white-space: nowrap; }
         .chk {
@@ -250,7 +266,7 @@ if (file_exists($bannerPath)) {
         <?php endif; ?>
 
         <div class="title-wrap">
-            <div class="title">SUPPLEMENTAL ANNUAL PROCUREMENT PLAN FOR FY 2026</div>
+            <div class="title"><?= htmlspecialchars($titleText) ?></div>
             <div class="mode-row">
                 <span class="mode-item"><span class="chk"></span>INDICATIVE</span>
                 <span class="mode-item"><span class="chk"></span>FINAL</span>
@@ -260,9 +276,9 @@ if (file_exists($bannerPath)) {
 
         <table class="app-grid">
             <colgroup>
-                <col style="width:13.2%">
+                <col style="width:11.7%">
                 <col style="width:5.2%">
-                <col style="width:14.1%">
+                <col style="width:18.6%">
                 <col style="width:6.5%">
                 <col style="width:6.5%">
                 <col style="width:6.7%">
@@ -271,7 +287,7 @@ if (file_exists($bannerPath)) {
                 <col style="width:7.3%">
                 <col style="width:6.3%">
                 <col style="width:7.3%">
-                <col style="width:13.8%">
+                <col style="width:10.8%">
             </colgroup>
             <thead>
                 <tr class="group-row">
@@ -351,9 +367,9 @@ if (file_exists($bannerPath)) {
 
         <table class="totals-grid">
             <colgroup>
-                <col style="width:13.2%">
+                <col style="width:11.7%">
                 <col style="width:5.2%">
-                <col style="width:14.1%">
+                <col style="width:18.6%">
                 <col style="width:6.5%">
                 <col style="width:6.5%">
                 <col style="width:6.7%">
@@ -362,7 +378,7 @@ if (file_exists($bannerPath)) {
                 <col style="width:7.3%">
                 <col style="width:6.3%">
                 <col style="width:7.3%">
-                <col style="width:13.8%">
+                <col style="width:10.8%">
             </colgroup>
             <tbody>
                 <tr>

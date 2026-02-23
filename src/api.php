@@ -81,8 +81,8 @@ function createRow(PDO $pdo): void
     $data = $payload['data'];
     $stmt = $pdo->prepare(
         'INSERT INTO procurement_projects
-        (project_title, end_user, type_of_project, general_description, mode_of_procurement, covered_by_epa, estimated_budget, created_at, updated_at)
-        VALUES (:project_title, :end_user, :type_of_project, :general_description, :mode_of_procurement, :covered_by_epa, :estimated_budget, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)'
+        (project_title, end_user, type_of_project, general_description, mode_of_procurement, covered_by_epa, document_type, estimated_budget, created_at, updated_at)
+        VALUES (:project_title, :end_user, :type_of_project, :general_description, :mode_of_procurement, :covered_by_epa, :document_type, :estimated_budget, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)'
     );
 
     $stmt->execute([
@@ -92,6 +92,7 @@ function createRow(PDO $pdo): void
         ':general_description' => $data['general_description'],
         ':mode_of_procurement' => $data['mode_of_procurement'],
         ':covered_by_epa' => $data['covered_by_epa'],
+        ':document_type' => $data['document_type'],
         ':estimated_budget' => $data['estimated_budget'],
     ]);
 
@@ -123,6 +124,7 @@ function updateRow(PDO $pdo): void
             general_description = :general_description,
             mode_of_procurement = :mode_of_procurement,
             covered_by_epa = :covered_by_epa,
+            document_type = :document_type,
             estimated_budget = :estimated_budget,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = :id'
@@ -136,6 +138,7 @@ function updateRow(PDO $pdo): void
         ':general_description' => $data['general_description'],
         ':mode_of_procurement' => $data['mode_of_procurement'],
         ':covered_by_epa' => $data['covered_by_epa'],
+        ':document_type' => $data['document_type'],
         ':estimated_budget' => $data['estimated_budget'],
     ]);
 
@@ -231,6 +234,7 @@ function validatePayload(array $input): array
     $generalDescriptionPlain = trim(html_entity_decode(strip_tags($generalDescription), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
     $mode = trim((string)($input['mode_of_procurement'] ?? ''));
     $epa = trim((string)($input['covered_by_epa'] ?? ''));
+    $documentType = trim((string)($input['document_type'] ?? ''));
     $budgetRaw = (string)($input['estimated_budget'] ?? '');
     $budget = is_numeric($budgetRaw) ? (float)$budgetRaw : -1;
 
@@ -250,6 +254,10 @@ function validatePayload(array $input): array
         return ['ok' => false, 'message' => 'Invalid EPA value'];
     }
 
+    if (!in_array($documentType, ['Empty', 'Updated', 'Supplemental'], true)) {
+        return ['ok' => false, 'message' => 'Invalid document type'];
+    }
+
     if ($budget < 0) {
         return ['ok' => false, 'message' => 'Estimated budget must be a valid number'];
     }
@@ -263,6 +271,7 @@ function validatePayload(array $input): array
             'general_description' => $generalDescription,
             'mode_of_procurement' => $mode,
             'covered_by_epa' => $epa,
+            'document_type' => $documentType,
             'estimated_budget' => $budget,
         ],
     ];

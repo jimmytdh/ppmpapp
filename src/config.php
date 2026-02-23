@@ -38,6 +38,7 @@ function initializeSchema(PDO $pdo): void
             general_description TEXT NOT NULL,
             mode_of_procurement TEXT NOT NULL CHECK(mode_of_procurement IN ("Public Bidding", "Small Value Procurement")),
             covered_by_epa TEXT NOT NULL CHECK(covered_by_epa IN ("Yes", "No")),
+            document_type TEXT NOT NULL CHECK(document_type IN ("Empty", "Updated", "Supplemental")) DEFAULT "Empty",
             estimated_budget REAL NOT NULL CHECK(estimated_budget >= 0),
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -55,6 +56,17 @@ function initializeSchema(PDO $pdo): void
     }
     if (!$hasTypeOfProject) {
         $pdo->exec('ALTER TABLE procurement_projects ADD COLUMN type_of_project TEXT NOT NULL DEFAULT "Goods"');
+    }
+
+    $hasDocumentType = false;
+    foreach ($columns as $column) {
+        if (($column['name'] ?? '') === 'document_type') {
+            $hasDocumentType = true;
+            break;
+        }
+    }
+    if (!$hasDocumentType) {
+        $pdo->exec('ALTER TABLE procurement_projects ADD COLUMN document_type TEXT NOT NULL DEFAULT "Empty"');
     }
 
     $pdo->exec(
