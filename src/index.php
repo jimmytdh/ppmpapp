@@ -52,6 +52,7 @@ declare(strict_types=1);
                             <tr>
                                 <th class="px-4 py-3 text-left">Project Title</th>
                                 <th class="px-4 py-3 text-left">End User</th>
+                                <th class="px-4 py-3 text-left">Type of Project</th>
                                 <th class="px-4 py-3 text-left">General Description</th>
                                 <th class="px-4 py-3 text-left">Mode</th>
                                 <th class="px-4 py-3 text-left">EPA</th>
@@ -75,15 +76,23 @@ declare(strict_types=1);
             <form id="projectForm" class="space-y-4">
                 <input type="hidden" id="projectId" name="id">
                 <div>
-                    <label class="mb-1 block text-sm font-semibold">Column 1: Project Title</label>
+                    <label class="mb-1 block text-sm font-semibold">Project Title</label>
                     <input type="text" id="project_title" name="project_title" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-semibold">Column 2: End User</label>
+                    <label class="mb-1 block text-sm font-semibold">End User</label>
                     <input type="text" id="end_user" name="end_user" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-semibold">Column 3: General Description</label>
+                    <label class="mb-1 block text-sm font-semibold">Type of Project</label>
+                    <select id="type_of_project" name="type_of_project" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
+                        <option value="Goods">Goods</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="Service">Service</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-semibold">General Description</label>
                     <div class="mb-2 inline-flex overflow-hidden rounded-lg border border-slate-300">
                         <button type="button" class="rte-btn border-r border-slate-300 px-3 py-1.5 text-sm font-bold hover:bg-slate-50" data-cmd="bold">B</button>
                         <button type="button" class="rte-btn border-r border-slate-300 px-3 py-1.5 text-sm italic hover:bg-slate-50" data-cmd="italic">I</button>
@@ -94,21 +103,21 @@ declare(strict_types=1);
                 </div>
                 <div class="grid gap-4 md:grid-cols-3">
                     <div>
-                        <label class="mb-1 block text-sm font-semibold">Column 4: Mode of Procurement</label>
+                        <label class="mb-1 block text-sm font-semibold">Mode of Procurement</label>
                         <select id="mode_of_procurement" name="mode_of_procurement" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
                             <option value="Public Bidding">Public Bidding</option>
                             <option value="Small Value Procurement">Small Value Procurement</option>
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-semibold">Column 5: Covered by EPA</label>
+                        <label class="mb-1 block text-sm font-semibold">Covered by EPA</label>
                         <select id="covered_by_epa" name="covered_by_epa" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-semibold">Column 10: Estimated Budget</label>
+                        <label class="mb-1 block text-sm font-semibold">Estimated Budget</label>
                         <input type="number" id="estimated_budget" name="estimated_budget" min="0" step="0.01" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
                     </div>
                 </div>

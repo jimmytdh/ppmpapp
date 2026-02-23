@@ -34,6 +34,7 @@ function initializeSchema(PDO $pdo): void
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project_title TEXT NOT NULL,
             end_user TEXT NOT NULL,
+            type_of_project TEXT NOT NULL CHECK(type_of_project IN ("Goods", "Infrastructure", "Service")),
             general_description TEXT NOT NULL,
             mode_of_procurement TEXT NOT NULL CHECK(mode_of_procurement IN ("Public Bidding", "Small Value Procurement")),
             covered_by_epa TEXT NOT NULL CHECK(covered_by_epa IN ("Yes", "No")),
@@ -42,6 +43,19 @@ function initializeSchema(PDO $pdo): void
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )'
     );
+
+    // Lightweight schema migration for existing databases.
+    $columns = $pdo->query("PRAGMA table_info(procurement_projects)")->fetchAll();
+    $hasTypeOfProject = false;
+    foreach ($columns as $column) {
+        if (($column['name'] ?? '') === 'type_of_project') {
+            $hasTypeOfProject = true;
+            break;
+        }
+    }
+    if (!$hasTypeOfProject) {
+        $pdo->exec('ALTER TABLE procurement_projects ADD COLUMN type_of_project TEXT NOT NULL DEFAULT "Goods"');
+    }
 
     $pdo->exec(
         'CREATE TABLE IF NOT EXISTS app_settings (

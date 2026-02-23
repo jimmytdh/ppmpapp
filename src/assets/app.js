@@ -147,7 +147,7 @@
 
     function renderRows(rows) {
         if (!rows.length) {
-            tbody.html('<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No records yet.</td></tr>');
+            tbody.html('<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No records yet.</td></tr>');
             return;
         }
 
@@ -155,6 +155,7 @@
             <tr>
                 <td class="px-4 py-3 align-top font-semibold text-slate-800">${escapeHtml(row.project_title)}</td>
                 <td class="px-4 py-3 align-top">${escapeHtml(row.end_user)}</td>
+                <td class="px-4 py-3 align-top">${escapeHtml(row.type_of_project || '')}</td>
                 <td class="px-4 py-3 align-top text-slate-700">${formatDescription(row.general_description)}</td>
                 <td class="px-4 py-3 align-top">${escapeHtml(row.mode_of_procurement)}</td>
                 <td class="px-4 py-3 align-top">${escapeHtml(row.covered_by_epa)}</td>
@@ -162,6 +163,7 @@
                 <td class="px-4 py-3 align-top">
                     <div class="inline-flex overflow-hidden rounded-lg border border-slate-300 shadow-sm">
                         <button class="app-btn border-r border-slate-300 bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500" data-id="${row.id}">APP</button>
+                        <button class="ppmp-btn border-r border-slate-300 bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-400" data-id="${row.id}">PPMP</button>
                         <button class="edit-btn border-r border-slate-300 bg-cyan-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-cyan-500" data-id="${row.id}">Edit</button>
                         <button class="delete-btn bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-500" data-id="${row.id}">Delete</button>
                     </div>
@@ -280,6 +282,7 @@
                 $('#projectId').val(row.id);
                 $('#project_title').val(row.project_title);
                 $('#end_user').val(row.end_user);
+                $('#type_of_project').val(row.type_of_project || 'Goods');
                 descriptionEditor.html(toEditorHtml(row.general_description || ''));
                 $('#general_description').val(toEditorHtml(row.general_description || ''));
                 $('#mode_of_procurement').val(row.mode_of_procurement);
@@ -308,6 +311,12 @@
     tbody.on('click', '.app-btn', function () {
         const id = Number($(this).data('id'));
         const url = `print_v2.php?ids[]=${encodeURIComponent(id)}`;
+        window.open(url, '_blank', 'noopener');
+    });
+
+    tbody.on('click', '.ppmp-btn', function () {
+        const id = Number($(this).data('id'));
+        const url = `ppmp_v2.php?ids[]=${encodeURIComponent(id)}`;
         window.open(url, '_blank', 'noopener');
     });
 

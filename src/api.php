@@ -81,13 +81,14 @@ function createRow(PDO $pdo): void
     $data = $payload['data'];
     $stmt = $pdo->prepare(
         'INSERT INTO procurement_projects
-        (project_title, end_user, general_description, mode_of_procurement, covered_by_epa, estimated_budget, created_at, updated_at)
-        VALUES (:project_title, :end_user, :general_description, :mode_of_procurement, :covered_by_epa, :estimated_budget, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)'
+        (project_title, end_user, type_of_project, general_description, mode_of_procurement, covered_by_epa, estimated_budget, created_at, updated_at)
+        VALUES (:project_title, :end_user, :type_of_project, :general_description, :mode_of_procurement, :covered_by_epa, :estimated_budget, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)'
     );
 
     $stmt->execute([
         ':project_title' => $data['project_title'],
         ':end_user' => $data['end_user'],
+        ':type_of_project' => $data['type_of_project'],
         ':general_description' => $data['general_description'],
         ':mode_of_procurement' => $data['mode_of_procurement'],
         ':covered_by_epa' => $data['covered_by_epa'],
@@ -118,6 +119,7 @@ function updateRow(PDO $pdo): void
         'UPDATE procurement_projects SET
             project_title = :project_title,
             end_user = :end_user,
+            type_of_project = :type_of_project,
             general_description = :general_description,
             mode_of_procurement = :mode_of_procurement,
             covered_by_epa = :covered_by_epa,
@@ -130,6 +132,7 @@ function updateRow(PDO $pdo): void
         ':id' => $id,
         ':project_title' => $data['project_title'],
         ':end_user' => $data['end_user'],
+        ':type_of_project' => $data['type_of_project'],
         ':general_description' => $data['general_description'],
         ':mode_of_procurement' => $data['mode_of_procurement'],
         ':covered_by_epa' => $data['covered_by_epa'],
@@ -223,6 +226,7 @@ function validatePayload(array $input): array
 {
     $projectTitle = trim((string)($input['project_title'] ?? ''));
     $endUser = trim((string)($input['end_user'] ?? ''));
+    $typeOfProject = trim((string)($input['type_of_project'] ?? ''));
     $generalDescription = trim((string)($input['general_description'] ?? ''));
     $generalDescriptionPlain = trim(html_entity_decode(strip_tags($generalDescription), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
     $mode = trim((string)($input['mode_of_procurement'] ?? ''));
@@ -232,6 +236,10 @@ function validatePayload(array $input): array
 
     if ($projectTitle === '' || $endUser === '' || $generalDescriptionPlain === '') {
         return ['ok' => false, 'message' => 'Text fields are required'];
+    }
+
+    if (!in_array($typeOfProject, ['Goods', 'Infrastructure', 'Service'], true)) {
+        return ['ok' => false, 'message' => 'Invalid type of project'];
     }
 
     if (!in_array($mode, ['Public Bidding', 'Small Value Procurement'], true)) {
@@ -251,6 +259,7 @@ function validatePayload(array $input): array
         'data' => [
             'project_title' => $projectTitle,
             'end_user' => $endUser,
+            'type_of_project' => $typeOfProject,
             'general_description' => $generalDescription,
             'mode_of_procurement' => $mode,
             'covered_by_epa' => $epa,

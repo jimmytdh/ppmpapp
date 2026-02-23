@@ -12,7 +12,7 @@ if (!is_array($ids)) {
 $cleanIds = array_values(array_unique(array_filter(array_map(static fn ($id) => (int)$id, $ids), static fn ($id) => $id > 0)));
 if ($cleanIds === []) {
     http_response_code(422);
-    echo 'No rows selected for APP.';
+    echo 'No rows selected for PPMP.';
     exit;
 }
 
@@ -28,16 +28,8 @@ if (!$rows) {
     exit;
 }
 
-$totalEpa = 0.0;
-$totalNonEpa = 0.0;
-foreach ($rows as $row) {
-    if (strcasecmp((string)$row['covered_by_epa'], 'Yes') === 0) {
-        $totalEpa += (float)$row['estimated_budget'];
-    } else {
-        $totalNonEpa += (float)$row['estimated_budget'];
-    }
-}
-
+$fiscalYear = (new DateTime())->format('Y');
+$totalBudget = 0.0;
 $signatoryStmt = $pdo->query('SELECT prepared_by_name, prepared_by_designation, submitted_by_name, submitted_by_designation, sign_date FROM app_settings WHERE id = 1');
 $signatory = $signatoryStmt->fetch() ?: [
     'prepared_by_name' => 'JIMMY B. LOMOCSO JR.',
@@ -46,6 +38,22 @@ $signatory = $signatoryStmt->fetch() ?: [
     'submitted_by_designation' => 'Chief Administrative Officer',
     'sign_date' => '',
 ];
+$endUsers = [];
+foreach ($rows as $row) {
+    $val = trim((string)$row['end_user']);
+    if ($val !== '') {
+        $endUsers[$val] = true;
+    }
+    $totalBudget += (float)$row['estimated_budget'];
+}
+$endUserLabel = implode(', ', array_keys($endUsers));
+
+$bannerDataUri = null;
+$bannerPath = __DIR__ . '/assets/print-header.png';
+if (file_exists($bannerPath)) {
+    $mime = mime_content_type($bannerPath) ?: 'image/png';
+    $bannerDataUri = 'data:' . $mime . ';base64,' . base64_encode((string)file_get_contents($bannerPath));
+}
 
 $displayDate = '';
 if (!empty($signatory['sign_date'])) {
@@ -103,20 +111,13 @@ function sanitizeDescriptionHtml(string $html): string
     return $htmlOut;
 }
 
-$bannerDataUri = null;
-$bannerPath = __DIR__ . '/assets/print-header.png';
-if (file_exists($bannerPath)) {
-    $mime = mime_content_type($bannerPath) ?: 'image/png';
-    $bannerDataUri = 'data:' . $mime . ';base64,' . base64_encode((string)file_get_contents($bannerPath));
-}
-
 ?>
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APP Print View</title>
+    <title>PPMP Print View</title>
     <style>
         @page { size: legal landscape; margin: 0.15in; }
         html, body { margin: 0; padding: 0; color: #000; }
@@ -124,72 +125,52 @@ if (file_exists($bannerPath)) {
         .sheet { width: 100%; }
         .no-print { display: flex; gap: 8px; margin: 0 0 8px 0; }
         .no-print button { border: 1px solid #c9c9c9; background: #f7f7f7; padding: 6px 10px; cursor: pointer; }
-
         .print-banner { width: 100%; }
         .print-banner img { width: 100%; height: auto; display: block; }
-        .title-wrap { text-align: center; margin: 28px 0 8px 0; }
-        .title { font-weight: 700; font-size: 10px; line-height: 1.15; letter-spacing: 0.2px; }
-        .mode-row { margin-top: 10px; font-size: 10px; font-weight: 700; }
-        .mode-item { margin: 0 18px; white-space: nowrap; }
+        .title-wrap { text-align: center; margin: 22px 0 10px 0; }
+        .title { font-weight: 700; font-size: 14px; line-height: 1.15; }
+        .mode-row { margin-top: 8px; font-size: 10px; font-weight: 700; }
+        .mode-item { margin: 0 28px; white-space: nowrap; }
         .chk {
             display: inline-block;
-            width: 22px;
-            height: 22px;
-            border: 1.6px solid #000;
+            width: 24px;
+            height: 24px;
+            border: 1.8px solid #000;
             vertical-align: middle;
             margin-right: 8px;
             margin-top: -2px;
         }
+        .meta { margin: 12px 0 10px 0; font-size: 10px; font-weight: 700; line-height: 1.35; }
 
-        .app-grid {
+        .ppmp-grid {
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
             font-size: 10px;
         }
-        .app-grid th, .app-grid td {
+        .ppmp-grid th, .ppmp-grid td {
             border: 1px solid #000;
             padding: 2px 4px;
             vertical-align: top;
         }
-        .app-grid thead th {
+        .ppmp-grid thead th {
             text-align: center;
             vertical-align: middle;
             font-weight: 700;
         }
         .group-row th { font-size: 10px; }
-        .hdr-row th { font-size: 10px; line-height: 1.1; }
+        .hdr-row th { font-size: 10px; line-height: 1.15; }
         .colno-row th { font-size: 10px; line-height: 1; }
-        .section td {
-            font-weight: 700;
-            background: #fff;
-        }
-        .blank td {
-            height: 28px;
-            padding: 0;
-        }
-        .data-row td { font-size: 10px; }
-        .desc { font-size: 10px; line-height: 1.25; word-break: break-word; }
+        .data-row td { font-size: 10px; line-height: 1.2; }
+        .desc { word-break: break-word; }
         .ctr { text-align: center; }
         .num { text-align: right; white-space: nowrap; }
-        .totals-grid {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-            margin-top: 22px;
-            font-size: 10px;
-            font-weight: 700;
-        }
-        .totals-grid td {
-            border: none;
-            padding: 0;
-            vertical-align: top;
-        }
-        .totals-label { text-align: right; padding-right: 8px; }
-        .totals-value { text-align: right; white-space: nowrap; }
+        .blank td { height: 30px; padding: 0; }
+        .total-row td { font-weight: 700; }
+        .total-row .label { text-align: right; }
 
         .signatories {
-            margin-top: 16px;
+            margin-top: 12px;
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
@@ -220,7 +201,7 @@ if (file_exists($bannerPath)) {
             padding-top: 2px;
         }
         .signatories .date-row td {
-            padding-top: 34px;
+            padding-top: 16px;
             text-align: center;
         }
         .date-line {
@@ -232,7 +213,7 @@ if (file_exists($bannerPath)) {
 
         @media print {
             .no-print { display: none; }
-            .app-grid thead { display: table-row-group; }
+            .ppmp-grid thead { display: table-row-group; }
         }
     </style>
 </head>
@@ -250,48 +231,52 @@ if (file_exists($bannerPath)) {
         <?php endif; ?>
 
         <div class="title-wrap">
-            <div class="title">SUPPLEMENTAL ANNUAL PROCUREMENT PLAN FOR FY 2026</div>
+            <div class="title">PROJECT PROCUREMENT MANAGEMENT PLAN (PPMP) NO. ___</div>
             <div class="mode-row">
                 <span class="mode-item"><span class="chk"></span>INDICATIVE</span>
                 <span class="mode-item"><span class="chk"></span>FINAL</span>
-                <span class="mode-item"><span class="chk"></span>UPDATED [Version No. ____ ]</span>
             </div>
         </div>
 
-        <table class="app-grid">
+        <div class="meta">
+            <div>Fiscal Year : <?= htmlspecialchars($fiscalYear) ?></div>
+            <div>End-User or Implementing Unit: <?= htmlspecialchars($endUserLabel) ?></div>
+        </div>
+
+        <table class="ppmp-grid">
             <colgroup>
-                <col style="width:13.2%">
-                <col style="width:5.2%">
-                <col style="width:14.1%">
+                <col style="width:10.8%">
+                <col style="width:8.8%">
+                <col style="width:9.5%">
+                <col style="width:9.5%">
+                <col style="width:5.8%">
+                <col style="width:7.2%">
+                <col style="width:6.0%">
+                <col style="width:6.0%">
+                <col style="width:8.0%">
                 <col style="width:6.5%">
-                <col style="width:6.5%">
-                <col style="width:6.7%">
-                <col style="width:6.7%">
-                <col style="width:6.4%">
-                <col style="width:7.3%">
-                <col style="width:6.3%">
-                <col style="width:7.3%">
-                <col style="width:13.8%">
+                <col style="width:8.5%">
+                <col style="width:13.4%">
             </colgroup>
             <thead>
                 <tr class="group-row">
-                    <th colspan="6">PROCUREMENT PROJECT DETAILS</th>
-                    <th colspan="2">PROJECTED TIMELINE (MM/YYYY)</th>
+                    <th colspan="5">PROCUREMENT PROJECT DETAILS</th>
+                    <th colspan="3">PROJECTED TIMELINE (MM/YYYY)</th>
                     <th colspan="2">FUNDING DETAILS</th>
-                    <th rowspan="3">PROCUREMENT<br>STRATEGY OR TOOLS</th>
-                    <th rowspan="3">REMARKS<br>(Other relevant descriptions of the procurement project, if applicable)</th>
+                    <th rowspan="2">ATTACHED SUPPORTING DOCUMENTS</th>
+                    <th rowspan="2">REMARKS</th>
                 </tr>
                 <tr class="hdr-row">
-                    <th>Project Title</th>
-                    <th>End-User or<br>Implementing<br>Unit</th>
-                    <th>General Description of the Project</th>
-                    <th>Mode of Procurement</th>
-                    <th>To be covered by an Early Procurement Activity? (Yes/No)</th>
-                    <th>Criteria for Bid Evaluation (Including Sustainability and Domestic Preference)</th>
-                    <th>Start of<br>Procurement Activity</th>
-                    <th>End of<br>Procurement Activity</th>
-                    <th>Source of Fund</th>
-                    <th>Estimated Budget / Approved Budget for the Contract (PhP)</th>
+                    <th>General Description and Objective of the Project to be Procured</th>
+                    <th>Type of the Project to be Procured (whether Goods, Infrastructure and Consulting Services)</th>
+                    <th>Quantity and Size of the Project to be Procured</th>
+                    <th>Recommended Mode of Procurement</th>
+                    <th>Pre-Procurement Conference, if applicable (Yes/No)</th>
+                    <th>Start of Procurement Activity</th>
+                    <th>End of Procurement Activity</th>
+                    <th>Expected Delivery/Implementation Period</th>
+                    <th>Source of Funds</th>
+                    <th>Estimated Budget/Authorized Budgetary Allocation (PhP)</th>
                 </tr>
                 <tr class="colno-row">
                     <th>Column 1</th>
@@ -304,15 +289,16 @@ if (file_exists($bannerPath)) {
                     <th>Column 8</th>
                     <th>Column 9</th>
                     <th>Column 10</th>
+                    <th>Column 11</th>
+                    <th>Column 12</th>
                 </tr>
             </thead>
             <tbody>
-                <tr class="section"><td colspan="12">General Requirements</td></tr>
                 <?php foreach ($rows as $row): ?>
                     <tr class="data-row">
-                        <td><?= htmlspecialchars((string)$row['project_title']) ?></td>
-                        <td class="ctr"><?= htmlspecialchars((string)$row['end_user']) ?></td>
                         <td class="desc"><?= sanitizeDescriptionHtml((string)$row['general_description']) ?></td>
+                        <td class="ctr"><?= htmlspecialchars((string)($row['type_of_project'] ?? '')) ?></td>
+                        <td>&nbsp;</td>
                         <td class="ctr"><?= htmlspecialchars((string)$row['mode_of_procurement']) ?></td>
                         <td class="ctr"><?= htmlspecialchars((string)$row['covered_by_epa']) ?></td>
                         <td>&nbsp;</td>
@@ -330,54 +316,10 @@ if (file_exists($bannerPath)) {
                         <?php for ($j = 0; $j < 12; $j++): ?><td>&nbsp;</td><?php endfor; ?>
                     </tr>
                 <?php endfor; ?>
-
-                <tr class="section"><td colspan="12">Miscellaneous Items (for Direct Acquisition only) Sec 32.2 of RA No. 12009</td></tr>
-                <?php for ($i = 0; $i < 2; $i++): ?>
-                    <tr class="blank">
-                        <?php for ($j = 0; $j < 12; $j++): ?><td>&nbsp;</td><?php endfor; ?>
-                    </tr>
-                <?php endfor; ?>
-
-                <tr class="section"><td colspan="12">Common Use Supplies and Equipment (CSE) to be purchased from PS-DBM (kindly indicate the summary/total amounts only)</td></tr>
-                <?php for ($i = 0; $i < 2; $i++): ?>
-                    <tr class="blank">
-                        <?php for ($j = 0; $j < 12; $j++): ?><td>&nbsp;</td><?php endfor; ?>
-                    </tr>
-                <?php endfor; ?>
-
-                <tr><td colspan="12">Note: Insert additional rows as necessary</td></tr>
-            </tbody>
-        </table>
-
-        <table class="totals-grid">
-            <colgroup>
-                <col style="width:13.2%">
-                <col style="width:5.2%">
-                <col style="width:14.1%">
-                <col style="width:6.5%">
-                <col style="width:6.5%">
-                <col style="width:6.7%">
-                <col style="width:6.7%">
-                <col style="width:6.4%">
-                <col style="width:7.3%">
-                <col style="width:6.3%">
-                <col style="width:7.3%">
-                <col style="width:13.8%">
-            </colgroup>
-            <tbody>
-                <tr>
-                    <td colspan="9" class="totals-label">Total Amount of Estimated Budget for EPA Projects:</td>
-                    <td class="totals-value">&nbsp;</td>
-                    <td colspan="2">&nbsp;</td>
-                </tr>
-                <tr>
-                    <td colspan="9" class="totals-label">Total Amount of CSEs to be purchased from PS-DBM:</td>
-                    <td class="totals-value">&nbsp;</td>
-                    <td colspan="2">&nbsp;</td>
-                </tr>
-                <tr>
-                    <td colspan="9" class="totals-label">Total Amount of Estimated Budget:</td>
-                    <td class="totals-value">&nbsp;</td>
+                <tr class="total-row">
+                    <td colspan="8">&nbsp;</td>
+                    <td class="label">TOTAL BUDGET:</td>
+                    <td class="num"><?= number_format($totalBudget, 2) ?></td>
                     <td colspan="2">&nbsp;</td>
                 </tr>
             </tbody>
@@ -386,9 +328,9 @@ if (file_exists($bannerPath)) {
         <table class="signatories">
             <colgroup>
                 <col style="width:20%">
-                <col style="width:29%">
-                <col style="width:22%">
-                <col style="width:29%">
+                <col style="width:24%">
+                <col style="width:18%">
+                <col style="width:38%">
             </colgroup>
             <tbody>
                 <tr>
