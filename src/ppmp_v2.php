@@ -257,7 +257,7 @@ function sanitizeDescriptionHtml(string $html): string
 
         <table class="ppmp-grid">
             <colgroup>
-                <col style="width:16.8%">
+                <col style="width:18.8%">
                 <col style="width:8.8%">
                 <col style="width:8.5%">
                 <col style="width:8.5%">
@@ -268,7 +268,7 @@ function sanitizeDescriptionHtml(string $html): string
                 <col style="width:8.0%">
                 <col style="width:6.5%">
                 <col style="width:7.5%">
-                <col style="width:10.4%">
+                <col style="width:8.4%">
             </colgroup>
             <thead>
                 <tr class="group-row">
@@ -308,7 +308,9 @@ function sanitizeDescriptionHtml(string $html): string
             <tbody>
                 <?php foreach ($rows as $row): ?>
                     <tr class="data-row">
-                        <td class="desc"><?= sanitizeDescriptionHtml((string)$row['general_description']) ?></td>
+                        <td class="desc">
+                            <b><?= htmlspecialchars((string)$row['project_title']) ?></b><br><br><?= sanitizeDescriptionHtml((string)$row['general_description']) ?>
+                        </td>
                         <td class="ctr"><?= htmlspecialchars((string)($row['type_of_project'] ?? '')) ?></td>
                         <td>&nbsp;</td>
                         <td class="ctr"><?= htmlspecialchars((string)$row['mode_of_procurement']) ?></td>
