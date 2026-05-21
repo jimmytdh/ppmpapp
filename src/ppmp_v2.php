@@ -264,8 +264,8 @@ function sanitizeDescriptionHtml(string $html): string
                 <col style="width:5.8%">
                 <col style="width:7.2%">
                 <col style="width:6.0%">
-                <col style="width:6.0%">
                 <col style="width:8.0%">
+                <col style="width:6.0%">
                 <col style="width:6.5%">
                 <col style="width:7.5%">
                 <col style="width:8.4%">
@@ -286,9 +286,9 @@ function sanitizeDescriptionHtml(string $html): string
                     <th>Pre-Procurement Conference, if applicable (Yes/No)</th>
                     <th>Start of Procurement Activity</th>
                     <th>End of Procurement Activity</th>
-                    <th>Expected Delivery/Implementation Period</th>
+                    <th>Expected Delivery/ Implementation Period</th>
                     <th>Source of Funds</th>
-                    <th>Estimated Budget/Authorized Budgetary Allocation (PhP)</th>
+                    <th>Estimated Budget/ Authorized Budgetary Allocation (PhP)</th>
                 </tr>
                 <tr class="colno-row">
                     <th>Column 1</th>
