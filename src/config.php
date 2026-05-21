@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 const DB_FILE = __DIR__ . '/database/app.sqlite';
+const ALLOWED_MODES_OF_PROCUREMENT = [
+    'Public Bidding',
+    'Small Value Procurement',
+    'Direct Retail Purchase of Petroleum Fuel, Oil and Lubricant Products Electronic Charging Devices, and Online Subscriptions',
+];
 
 function db(): PDO
 {
@@ -29,6 +34,11 @@ function db(): PDO
 
 function initializeSchema(PDO $pdo): void
 {
+    $modeValuesSql = implode(', ', array_map(
+        static fn (string $value): string => '"' . str_replace('"', '""', $value) . '"',
+        ALLOWED_MODES_OF_PROCUREMENT
+    ));
+
     $pdo->exec(
         'CREATE TABLE IF NOT EXISTS procurement_projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +46,7 @@ function initializeSchema(PDO $pdo): void
             end_user TEXT NOT NULL,
             type_of_project TEXT NOT NULL CHECK(type_of_project IN ("Goods", "Infrastructure", "Service")),
             general_description TEXT NOT NULL,
-            mode_of_procurement TEXT NOT NULL CHECK(mode_of_procurement IN ("Public Bidding", "Small Value Procurement")),
+            mode_of_procurement TEXT NOT NULL CHECK(mode_of_procurement IN (' . $modeValuesSql . ')),
             covered_by_epa TEXT NOT NULL CHECK(covered_by_epa IN ("Yes", "No")),
             document_type TEXT NOT NULL CHECK(document_type IN ("Empty", "Updated", "Supplemental")) DEFAULT "Empty",
             estimated_budget REAL NOT NULL CHECK(estimated_budget >= 0),
@@ -69,6 +79,8 @@ function initializeSchema(PDO $pdo): void
         $pdo->exec('ALTER TABLE procurement_projects ADD COLUMN document_type TEXT NOT NULL DEFAULT "Empty"');
     }
 
+    ensureModeOfProcurementConstraint($pdo, $modeValuesSql);
+
     $pdo->exec(
         'CREATE TABLE IF NOT EXISTS app_settings (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -95,5 +107,51 @@ function initializeSchema(PDO $pdo): void
             ':submitted_by_designation' => 'Chief Administrative Officer',
             ':sign_date' => '',
         ]);
+    }
+}
+
+function ensureModeOfProcurementConstraint(PDO $pdo, string $modeValuesSql): void
+{
+    $schemaSql = $pdo->query("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'procurement_projects'")
+        ->fetchColumn();
+
+    if (!is_string($schemaSql) || strpos($schemaSql, 'Direct Retail Purchase of Petroleum Fuel, Oil and Lubricant Products Electronic Charging Devices, and Online Subscriptions') !== false) {
+        return;
+    }
+
+    $pdo->beginTransaction();
+
+    try {
+        $pdo->exec(
+            'CREATE TABLE procurement_projects_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_title TEXT NOT NULL,
+                end_user TEXT NOT NULL,
+                type_of_project TEXT NOT NULL CHECK(type_of_project IN ("Goods", "Infrastructure", "Service")),
+                general_description TEXT NOT NULL,
+                mode_of_procurement TEXT NOT NULL CHECK(mode_of_procurement IN (' . $modeValuesSql . ')),
+                covered_by_epa TEXT NOT NULL CHECK(covered_by_epa IN ("Yes", "No")),
+                document_type TEXT NOT NULL CHECK(document_type IN ("Empty", "Updated", "Supplemental")) DEFAULT "Empty",
+                estimated_budget REAL NOT NULL CHECK(estimated_budget >= 0),
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )'
+        );
+
+        $pdo->exec(
+            'INSERT INTO procurement_projects_new
+            (id, project_title, end_user, type_of_project, general_description, mode_of_procurement, covered_by_epa, document_type, estimated_budget, created_at, updated_at)
+            SELECT id, project_title, end_user, type_of_project, general_description, mode_of_procurement, covered_by_epa, document_type, estimated_budget, created_at, updated_at
+            FROM procurement_projects'
+        );
+
+        $pdo->exec('DROP TABLE procurement_projects');
+        $pdo->exec('ALTER TABLE procurement_projects_new RENAME TO procurement_projects');
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
     }
 }

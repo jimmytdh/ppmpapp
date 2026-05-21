@@ -341,26 +341,22 @@ function sanitizeDescriptionHtml(string $html): string
 
         <table class="signatories">
             <colgroup>
-                <col style="width:20%">
-                <col style="width:24%">
-                <col style="width:18%">
-                <col style="width:38%">
+                <col style="width:33.33%">
+                <col style="width:33.33%">
+                <col style="width:33.34%">
             </colgroup>
             <tbody>
                 <tr>
                     <td class="label">Prepared by:</td>
                     <td class="label">Submitted by:</td>
                     <td class="label">Recommended by:</td>
-                    <td class="label">Approved by:</td>
                 </tr>
                 <tr>
                     <td class="name"><u><?= htmlspecialchars((string)$signatory['prepared_by_name']) ?></u></td>
                     <td class="name"><u><?= htmlspecialchars((string)$signatory['submitted_by_name']) ?></u></td>
                     <td class="name"><u>MR. WILLY JOHN DELUTE</u></td>
-                    <td class="name"><u>AGUSTIN D. AGOS JR., MD, FPGS, FPCS, MA, DODT, PhD OD, RODC, APRM&trade;</u></td>
                 </tr>
                 <tr>
-                    <td class="sig">Signature over Printed Name</td>
                     <td class="sig">Signature over Printed Name</td>
                     <td class="sig">Signature over Printed Name</td>
                     <td class="sig">Signature over Printed Name</td>
@@ -369,12 +365,10 @@ function sanitizeDescriptionHtml(string $html): string
                     <td><?= htmlspecialchars((string)$signatory['prepared_by_designation']) ?></td>
                     <td><?= htmlspecialchars((string)$signatory['submitted_by_designation']) ?></td>
                     <td>Budget Officer - SAO</td>
-                    <td>Medical Center Chief II</td>
                 </tr>
                 <tr class="date-row">
                     <td>Date : <span class="date-line"><?= htmlspecialchars($displayDate) ?></span></td>
                     <td>Date : <span class="date-line"><?= htmlspecialchars($displayDate) ?></span></td>
-                    <td>Date : <span class="date-line">_______</span></td>
                     <td>Date : <span class="date-line">_______</span></td>
                 </tr>
             </tbody>

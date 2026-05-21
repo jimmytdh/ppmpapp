@@ -227,6 +227,12 @@ function saveSignatories(PDO $pdo): void
 
 function validatePayload(array $input): array
 {
+    $allowedModes = [
+        'Public Bidding',
+        'Small Value Procurement',
+        'Direct Retail Purchase of Petroleum Fuel, Oil and Lubricant Products Electronic Charging Devices, and Online Subscriptions',
+    ];
+
     $projectTitle = trim((string)($input['project_title'] ?? ''));
     $endUser = trim((string)($input['end_user'] ?? ''));
     $typeOfProject = trim((string)($input['type_of_project'] ?? ''));
@@ -246,7 +252,7 @@ function validatePayload(array $input): array
         return ['ok' => false, 'message' => 'Invalid type of project'];
     }
 
-    if (!in_array($mode, ['Public Bidding', 'Small Value Procurement'], true)) {
+    if (!in_array($mode, $allowedModes, true)) {
         return ['ok' => false, 'message' => 'Invalid mode of procurement'];
     }
 

@@ -116,6 +116,7 @@ declare(strict_types=1);
                         <select id="mode_of_procurement" name="mode_of_procurement" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none ring-cyan-200 focus:ring-2" required>
                             <option value="Public Bidding">Public Bidding</option>
                             <option value="Small Value Procurement">Small Value Procurement</option>
+                            <option value="Direct Retail Purchase of Petroleum Fuel, Oil and Lubricant Products Electronic Charging Devices, and Online Subscriptions">Direct Retail Purchase and Online Subscriptions</option>
                         </select>
                     </div>
                     <div>
